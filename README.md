@@ -1,4 +1,8 @@
-# gitlab-api
+# Gitlab API
+
+## Currently available
+
+* generate gitlab project commits file based on a time period
 
 ## Environment variables
 
