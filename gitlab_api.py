@@ -9,7 +9,6 @@ from datetime import datetime
 import requests
 
 
-
 BASE_URL = os.environ.get('BASE_URL')
 API_URL = '{}/api/v4/'.format(BASE_URL)
 HEADERS = {
@@ -75,24 +74,27 @@ def get_required_fields(commit_objs, required_fields):
     temp_commit_objs = []
     for obj in commit_objs:
         obj['message'] = obj['message'].strip()
-        commit_date = datetime.strptime(obj['committed_date'][0:10], DATE_FORMAT)
+        commit_date = datetime.strptime(
+            obj['committed_date'][0:10],
+            DATE_FORMAT
+        )
         if START_DATE < commit_date < END_DATE:
             temp_commit_objs.append({
-                key:obj[key]
+                key: obj[key]
                 for key in obj
                 if key in required_fields
             })
     return temp_commit_objs
 
 
-def get_all_project_commits():
+def get_project_commits_data(**params):
     """
     :return:
     """
     commits = {}
     projects_api_url = "{}/projects/".format(API_URL)
     session = requests.Session()
-    project_ids = get_project_ids(file_name='project_details.csv')
+    project_ids = get_project_ids(file_name=params.get('file_name'))
     if project_ids:
         for project in project_ids:
             params = {
@@ -118,30 +120,42 @@ def get_all_project_commits():
     return commits
 
 
-def send_commits_to_file(header, commits):
+def send_commits_to_file(**csv_params):
+    """ create csv file
+
+    :param header: array of str
+    :param commits: dict of row data
     """
-    :param header:
-    :param commits:
-    :return:
-    """
-    with open(TARGET_FILE_PATH, 'w') as csv_file:
+    header = csv_params.get('header', [])
+    commits = csv_params.get('csv_data', {})
+    target_file = csv_params.get('file_name', '')
+    with open(target_file, 'w') as csv_file:
         file_writer = csv.writer(
             csv_file,
             delimiter=',',
             quoting=csv.QUOTE_MINIMAL,
         )
         file_writer.writerow(header)
-        for _key in commits.keys():
-            for _row in commits[_key]:
-                _row = [
-                    _key,
-                    _row['committer_name'],
-                    _row['committed_date'],
-                    _row['title']
-                ]  # to ensure correct order
-                file_writer.writerow(_row)
+        for key in commits.keys():
+            for row in commits[key]:
+                row = [
+                    key,
+                    row['committer_name'],
+                    row['committed_date'],
+                    row['title'],
+                ]  # to ensure correct order with header, can be replaced with `row = [key] + [row]`
+                file_writer.writerow(row)
 
 
-HEADER = ['Project name', 'Developer', 'Commit date', 'Commit message']
-COMMITS = get_all_project_commits()
-send_commits_to_file(HEADER, COMMITS)
+CSV_DATA = get_project_commits_data(file_name='project_details.csv')
+HEADER = [
+    'Project name',
+    'Developer',
+    'Commit date',
+    'Commit message',
+]
+send_commits_to_file(
+    header=HEADER,
+    csv_data=CSV_DATA,
+    file_name=TARGET_FILE_PATH,
+)
