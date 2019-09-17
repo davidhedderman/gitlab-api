@@ -1,5 +1,11 @@
 # Gitlab API
 
+## install dependecies
+
+```
+  $ pip install requirements.txt
+```
+
 ## Currently available
 
 * generate gitlab project commits file based on a time period
@@ -11,4 +17,4 @@
 
 ## TODO
 
-* make script to generate api calls accept argument
+* change script to accept argument, date range
