@@ -3,7 +3,7 @@
 ## install dependecies
 
 ```
-  $ pip install requirements.txt
+  $ pip install -r requirements.txt
 ```
 
 ## Currently available
